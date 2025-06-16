@@ -15,14 +15,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ckdiplom.ui.theme.CKDiplomTheme
 
+import com.example.ckdiplom.User
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             CKDiplomTheme {
+                var isLoggedIn by remember { mutableStateOf(false) }
+
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    LoginScreen()
+                    if (isLoggedIn) {
+                        User()
+                    } else {
+                        LoginScreen(
+                            onLoginSuccess = { isLoggedIn = true }
+                        )
+                    }
                 }
             }
         }
@@ -30,7 +40,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onLoginSuccess: () -> Unit) {
     val context = LocalContext.current
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -65,10 +75,10 @@ fun LoginScreen() {
 
         Button(
             onClick = {
-                if (login.isNotBlank() && password.isNotBlank()) {
-                    Toast.makeText(context, "Вход выполнен: $login", Toast.LENGTH_SHORT).show()
+                if (login == "user" && password == "user") {
+                    onLoginSuccess()
                 } else {
-                    Toast.makeText(context, "Введите логин и пароль", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Неверный логин или пароль", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -77,3 +87,4 @@ fun LoginScreen() {
         }
     }
 }
+
