@@ -24,13 +24,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             CKDiplomTheme {
                 var isLoggedIn by remember { mutableStateOf(false) }
+                var isAdmin by remember { mutableStateOf(false) }
 
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (isLoggedIn) {
-                        User()
-                    } else {
-                        LoginScreen(
-                            onLoginSuccess = { isLoggedIn = true }
+                    when {
+                        isAdmin -> Admin()
+                        isLoggedIn -> User()
+                        else -> LoginScreen(
+                            onUserLoginSuccess = { isLoggedIn = true },
+                            onAdminLoginSuccess = { isAdmin = true }
                         )
                     }
                 }
@@ -40,7 +42,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(
+    onUserLoginSuccess: () -> Unit,
+    onAdminLoginSuccess: () -> Unit
+) {
     val context = LocalContext.current
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -62,7 +67,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             value = login,
             onValueChange = { login = it },
             label = { Text("Логин") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         )
 
         OutlinedTextField(
@@ -70,15 +77,27 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             onValueChange = { password = it },
             label = { Text("Пароль") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp)
         )
 
         Button(
             onClick = {
-                if (login == "user" && password == "user") {
-                    onLoginSuccess()
-                } else {
-                    Toast.makeText(context, "Неверный логин или пароль", Toast.LENGTH_SHORT).show()
+                when {
+                    login == "admin" && password == "admin" -> {
+                        onAdminLoginSuccess()
+                    }
+                    login == "user" && password == "user" -> {
+                        onUserLoginSuccess()
+                    }
+                    else -> {
+                        Toast.makeText(
+                            context,
+                            "Неверный логин или пароль",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
